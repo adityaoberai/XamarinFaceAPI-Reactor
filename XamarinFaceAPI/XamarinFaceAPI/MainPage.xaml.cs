@@ -1,9 +1,13 @@
-﻿using Plugin.Media;
+﻿using Microsoft.Azure.CognitiveServices.Vision.Face;
+using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
+using Plugin.Media;
 using Plugin.Media.Abstractions;
+using SocialMojifier.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
@@ -63,8 +67,40 @@ namespace XamarinFaceAPI
         {
             if (Capture.Source != null)
             {
-                await DisplayAlert("Button Clicked", "Working", "Ok");
+                await DetectEmotion();
             }
+        }
+
+        public async Task DetectEmotion()
+        {
+            var credentials = new FaceAPICredentials();
+            var client = new FaceClient(new ApiKeyServiceClientCredentials(credentials.APIKey)) { Endpoint = credentials.Endpoint };
+            var responseList = await client.Face.DetectWithStreamAsync(capturedImage.GetStream(), returnFaceAttributes: new List<FaceAttributeType> { FaceAttributeType.Emotion });
+            var face = responseList.FirstOrDefault();
+            var predominant = FindPredominantEmotion(face.FaceAttributes.Emotion);
+
+            await DisplayAlert("Predominant Emotion", predominant, "Ok");
+        }
+
+        public string FindPredominantEmotion(Emotion emotion)
+        {
+            double max = 0;
+            PropertyInfo prop = null;
+
+            var emotionValues = typeof(Emotion).GetProperties();
+
+            foreach(PropertyInfo property in emotionValues)
+            {
+                var value = (double)property.GetValue(emotion);
+
+                if(value>max)
+                {
+                    max = value;
+                    prop = property;
+                }
+            }
+
+            return prop.Name.ToString();
         }
     }
 }
