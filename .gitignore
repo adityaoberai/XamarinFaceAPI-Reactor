@@ -10,6 +10,8 @@
 *.userosscache
 *.sln.docstates
 
+XamarinFaceAPI/XamarinFaceAPI/Helpers/FaceAPICredentials.cs
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
